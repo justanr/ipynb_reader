@@ -7,13 +7,11 @@ except ImportError:
 import docutils
 import docutils.io
 import docutils.core
-
 from io import StringIO
-
-import six
 
 from pelican import signals
 from pelican.readers import BaseReader, PelicanHTMLTranslator, RstReader
+
 
 def extract_blogdata(nbc, resc):
     '''Simply moves blog metadata found in the notebook's metadata over
@@ -23,7 +21,8 @@ def extract_blogdata(nbc, resc):
     resc['blogdata'] = nbc.metadata.pop('blogdata')
     return nbc, resc
 
-def append_new_line_to_code(nbc, resc):
+
+def append_new_line_to_cell(nbc, resc):
     """There's an edge case where sometimes blocks aren't new line
     terminated. We'll simply just tack a new line on if that's the case.
 
@@ -32,7 +31,7 @@ def append_new_line_to_code(nbc, resc):
     """
 
     for cell in nbc.cells:
-        if not cell.source.endswith("\n"):
+        if not cell.source.endswith('\n'):
             cell.source += '\n'
 
     return nbc, resc
@@ -46,7 +45,7 @@ class IPyNBReader(BaseReader):
     if RSTExporter:
         exporter = RSTExporter()
         exporter.register_preprocessor(extract_blogdata)
-        exporter.register_preprocessor(append_new_line_to_code)
+        exporter.register_preprocessor(append_new_line_to_cell)
 
     def __init__(self, *args, **kwargs):
         super(IPyNBReader, self).__init__(*args, **kwargs)
@@ -57,11 +56,11 @@ class IPyNBReader(BaseReader):
         verbatim, except for the source which now is a file-like object.
         """
         extra_params = {
-            'initial_header_level' : '2',
-            'syntax_highlight' : 'short',
-            'input_encoding' : 'utf-8',
-            'exit_status_level' : 2,
-            'embed_stylesheet' : False
+            'initial_header_level': '2',
+            'syntax_highlight': 'short',
+            'input_encoding': 'utf-8',
+            'exit_status_level': 2,
+            'embed_stylesheet': False
             }
 
         user_params = self.settings.get('DOCUTILS_SETTINGS', None)
@@ -84,22 +83,24 @@ class IPyNBReader(BaseReader):
         contents, metadata = self.exporter.from_filename(filename)
         publisher = self._get_publisher(contents=StringIO(contents))
         parts = publisher.writer.parts
-        
+
         contents = parts.get('body')
 
         blogdata = metadata.pop('blogdata')
-        parsed = {k:self.process_metadata(k,v) for k,v in blogdata.items()}
+        parsed = {k: self.process_metadata(k, v) for k, v in blogdata.items()}
 
         return contents, parsed
 
     @classmethod
-    def register_preprocesser(cls, preprocesser, enabled=True):
+    def register_preprocessor(cls, preprocessor, enabled=True):
         '''Helper method to register extra preprocessors onto the RST exporter.
         '''
         return cls.exporter.register_preprocessor(preprocessor, enabled)
 
+
 def add_reader(readers):
     readers.reader_classes['ipynb'] = IPyNBReader
+
 
 def register():
     signals.readers_init.connect(add_reader)
