@@ -1,7 +1,7 @@
-IPython/Juypter Notebook Reader
+IPython/Jupyter Notebook Reader
 ===============================
 
-This plugin gives Pelican the ability to build blogs from IPython/Juypter notebooks.
+This plugin gives Pelican the ability to build blogs from IPython/Jupyter notebooks.
 
 Just install it, edit some metadata in the notebook and you're good to go.
 
